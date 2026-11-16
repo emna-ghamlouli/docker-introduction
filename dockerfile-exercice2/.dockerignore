@@ -1,0 +1,15 @@
+# Fichiers Git
+.git
+
+# Fichiers sensibles
+.env
+.env.*
+
+# Dépendances
+node_modules
+
+# Fichiers logs
+*.log
+
+# Fichiers inutiles
+.dockerignore

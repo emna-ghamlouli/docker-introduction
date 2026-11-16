@@ -1,0 +1,97 @@
+Mission 1 : Audit de l’image Docker existante
+Commandes utilisées :
+- Identifier l’image de base : node:18-alpine.
+- Vérifier l’utilisateur d’exécution : docker exec quiz-audit whoami → root.
+- Relever la taille : docker image inspect quiz-docker:initial --format '{{.Size}}' → 242 704 240 octets.
+- Analyser les couches : docker history quiz-docker:initial.
+- Installer Trivy : winget install AquaSecurity.Trivy.
+- Analyser les vulnérabilités : trivy image quiz-docker:initial.
+- Exporter les résultats : trivy image --format json --output audit-initial.json quiz-docker:initial.
+
+
+Faites un tableau présentant l'état initial de votre image Docker et les risques identifiés.
+
+| Critère | État initial | Risque identifié |
+|:---|:---|:---|
+| Image Docker | quiz-docker:initial | Image non optimisée |
+| Image de base | Alpine 3.21.3 | Version signalée EOSL par Trivy |
+| Version Node.js | 18.20.8 | Version obsolète et non maintenue |
+| Utilisateur | Root par défaut | Risque d'élévation de privilèges |
+| Dépendances | Nombreuses dépendances npm | Surface d'attaque plus importante |
+| OpenSSL | Version 3.3.3-r0 | Vulnérabilités de sécurité |
+| Taille de l'image | Environ 169,8 Mo | Image relativement volumineuse |
+| Vulnérabilités | Plusieurs CVE détectées | Risques de sécurité élevés |
+
+
+
+
+Mission 2 : Analyse de l'image initiale
+1. L'image utilisée est-elle adaptée à une utilisation en production ?
+
+Non, pas dans son état actuel.
+
+L'image fonctionne avec Node.js et Alpine Linux, deux composants adaptés à la conteneurisation. Cependant, plusieurs problèmes de sécurité et d'optimisation ont été identifiés :
+- Alpine 3.21.3 est signalée comme EOSL par Trivy.
+- Node.js 18.20.8 n'est plus maintenu.
+- L'image contient des dépendances qui ne sont pas toutes nécessaires à l'exécution.
+- L'application s'exécute avec l'utilisateur root par défaut.
+- Le scan Trivy révèle plusieurs vulnérabilités, notamment critiques et élevées.
+2. Quels composants sont réellement nécessaires pour exécuter l'application ?
+
+Les éléments indispensables sont :
+- Node.js pour exécuter l'application.
+- Le serveur serve pour distribuer les fichiers.
+- Le dossier dist contenant les fichiers générés lors du build.
+Les outils de développement et les dépendances inutiles peuvent être supprimés de l'image finale.
+
+3. Quels risques de sécurité identifiez-vous ?
+- Exécution de l'application avec les privilèges root.
+- Utilisation d'une image de base obsolète.
+- Présence de vulnérabilités dans OpenSSL.
+- Dépendances npm potentiellement vulnérables.
+- Taille importante de l'image, augmentant la surface d'attaque.
+4. Quelles améliorations recommanderiez-vous en priorité ?
+1. Utiliser une version maintenue de Node.js et une image Alpine supportée.
+2. Corriger les dépendances vulnérables.
+3. Utiliser un Dockerfile multi-stage pour réduire la taille de l'image.
+4. Ajouter USER node pour éviter l'exécution en root.
+5. Supprimer les composants inutiles de l'image finale.
+Mission 3 : Sécurisation de l'image Docker
+Construction de la nouvelle image :
+docker build -t quiz-docker:secure .
+
+
+Démarrage du conteneur :
+docker run -d --name quiz-docker-container-secure quiz-docker:secure
+
+
+Publication sur Docker Hub :
+docker tag quiz-docker:secure ghamlouli/quiz-docker:secure
+
+docker push ghamlouli/quiz-docker:secure
+
+
+1. Quelles modifications ont apporté les améliorations les plus significatives ?
+
+Les améliorations les plus importantes sont l'utilisation d'un Dockerfile multi-stage, la suppression des dépendances inutiles, le choix d'une image de base plus légère et l'exécution de l'application avec un utilisateur non-root.
+
+2. La taille de l'image a-t-elle diminué ? Pourquoi ?
+
+Oui, elle est passée d'environ 243 Mo à 91,1 Mo, soit une réduction d'environ 62,5 %.
+
+Cette diminution est principalement due à la suppression des fichiers inutiles, des dépendances de développement et à l'utilisation d'une construction multi-stage.
+
+3. Quelles recommandations concernent le Dockerfile et lesquelles concernent l'exécution du conteneur ?
+- Dockerfile : utiliser une image de base légère et maintenue, appliquer le multi-stage build, ajouter un fichier .dockerignore et définir un utilisateur non-root.
+- Exécution du conteneur : limiter les ressources, supprimer les privilèges inutiles et éviter l'accès au socket Docker.
+4. Votre image est-elle désormais totalement sécurisée ? Justifiez votre réponse.
+
+Non, aucune image Docker ne peut être considérée comme totalement sécurisée. Des vulnérabilités peuvent toujours exister dans l'image de base ou les dépendances. Il est donc nécessaire d'effectuer régulièrement des analyses avec Trivy et de maintenir les composants à jour.
+
+5. Quelles mesures complémentaires proposeriez-vous pour un déploiement en production ?
+- Mettre à jour régulièrement les dépendances et l'image de base.
+- Intégrer Trivy dans le pipeline CI/CD.
+- Protéger les secrets et les variables sensibles.
+- Limiter les ressources CPU et mémoire.
+- Supprimer les privilèges inutiles.
+- Mettre en place une surveillance continue des conteneurs.

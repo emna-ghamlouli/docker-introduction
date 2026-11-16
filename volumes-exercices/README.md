@@ -12,6 +12,8 @@ Bienvenue dans cette série d'exercices sur l'utilisation des volumes Docker. Ce
 1. **Créer un volume nommé**  
    ```bash
    docker volume create mon_volume
+
+   
    ```
 
 2. **Lister les volumes existants**  
@@ -93,6 +95,7 @@ Bienvenue dans cette série d'exercices sur l'utilisation des volumes Docker. Ce
 
 3. **Créer un fichier dans le volume depuis l’hôte**  
    ```bash
+  
    echo "Fichier ajouté depuis l'hôte" > /var/lib/docker/volumes/mon_volume/_data/fichier_hote.txt
    ```
 
@@ -100,6 +103,8 @@ Bienvenue dans cette série d'exercices sur l'utilisation des volumes Docker. Ce
    ```bash
    docker run --rm -v mon_volume:/data nginx ls /data
    ```
+
+**\\wsl.localhost\docker-desktop\mnt\docker-desktop-disk\data\docker\volumes** 
 
 5. **Question** : Que constatez-vous concernant l'accès aux données du volume depuis l'hôte et le conteneur ?
 
@@ -129,7 +134,7 @@ Bienvenue dans cette série d'exercices sur l'utilisation des volumes Docker. Ce
    docker volume rm mon_volume
    ```
 
-5. **Question** : Qu’arrive-t-il aux données stockées dans le volume après sa suppression ? Pourquoi est-il important de comprendre cette opération ?
+5. **Question** : Qu’arrive-t-il aux données stockées dans le volume après sa suppression ? Pourquoi est-il important de comprendre cette opération ? les donnees sont suprimées
 
 ---
 
@@ -164,3 +169,4 @@ Bienvenue dans cette série d'exercices sur l'utilisation des volumes Docker. Ce
 
 Ces exercices vous aideront à mieux comprendre la gestion des volumes dans Docker. Prenez le temps de tester et d'explorer chaque commande pour renforcer votre compréhension.
 
+docker container run -d --name nginx-exercice2 -p 8080:80 -v "C:\Users\Emna\docker-introduction\dockerfile-exemple2:/usr/share/nginx" nginx
